@@ -6,7 +6,7 @@ import time
 import numpy as np
 import cv2
 import tqdm
-from src.tools.video_preprocess import gen_video_array
+# from src.tools.video_preprocess import gen_video_array
 
 
 openpose_header = [
@@ -144,10 +144,13 @@ class OpenPoseEstimator(object):
 
 if __name__ == '__main__':
     openpose = OpenPoseEstimator(op_path='D:\\Desktop\\openpose',
-                                 model_folder='D:\\Desktop\\Grad_poj\\Action-Evaluation\\weights',
+                                 model_folder='..\\..\\weights',
                                  DEBUG=True)
-    sample_video = "../../data/3.mp4"
+    sample_video = "../../test.png"
+    img = cv2.imread(sample_video)
     short_edge = 512
-
-    video_array = gen_video_array(sample_video, short_edge)
-    openpose.estimate_video(video_array)
+    _, _, out= openpose.estimate_image(img)
+    cv2.imshow('test', out)
+    cv2.waitKey(0)
+    # video_array = gen_video_array(sample_video, short_edge)
+    # openpose.estimate_video(video_array)
