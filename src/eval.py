@@ -7,7 +7,7 @@ import numpy as np
 import json
 import cv2
 import tqdm
-from pose.OpenPoseAPI import OpenPoseEstimator, openpose_header
+from pose.openposeAPI import OpenPoseEstimator, openpose_header
 from pose.pose_angle import get_angle_vec
 from pose.classifier import KNNClassifier
 

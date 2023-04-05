@@ -5,7 +5,7 @@ import time
 import json
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
-from src.pose.OpenPoseAPI import openpose_header
+from src.pose.openposeAPI import openpose_header
 
 vector_set = [
     ['left_elbow', 'left_wrist', 'left_shoulder', 'left_elbow'],
