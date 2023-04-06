@@ -55,47 +55,6 @@ class OpenPoseEstimator(object):
         self.opWrapper.configure(params)
         self.opWrapper.start()
 
-    def estimate_video(self, video_array, interval=1, only_prior_person=True):
-        num_frames = video_array.shape[0]
-        pbar = tqdm.tqdm(total=num_frames)
-        # start recognition
-        pose_list = []
-        norm_pose_list = []
-        output_list = []
-        for i in range(num_frames):
-            tic = time.time()
-            if i % interval != 0:
-                continue
-            # get image
-            frame = video_array[i]
-
-            # pose estimation
-            datum = self.op.Datum()
-            datum.cvInputData = frame
-            self.opWrapper.emplaceAndPop(self.op.VectorDatum([datum]))
-            multi_pose = datum.poseKeypoints  # (num_person, num_joint, 3)
-
-            if only_prior_person:
-                pose = self.__get_prior_person(multi_pose)
-                pose_list.append(pose)
-                norm_pose_list.append(self.__pose_normalization(pose))
-            else:
-                pose_list.append(multi_pose)
-                norm_pose_list.append(self.__pose_normalization(multi_pose))
-            if len(multi_pose.shape) != 3:
-                continue
-            output = datum.cvOutputData.copy()
-            output_list.append(output)
-            if self.DEBUG:
-                fps = 1 / (time.time() - tic)
-                cv2.putText(output, '%.2f fps' % fps, (30, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 255, 0),
-                            thickness=2)
-                cv2.imshow("Output", output)
-                cv2.waitKey(1)
-            pbar.update(interval)
-        pbar.close()
-        return pose_list, norm_pose_list, output_list
-
     def estimate_image(self, img, short_edge=512, only_prior_person=True):
         source_H, source_W, _ = img.shape
         if source_H > source_W:
@@ -110,6 +69,8 @@ class OpenPoseEstimator(object):
         datum.cvInputData = img
         self.opWrapper.emplaceAndPop(self.op.VectorDatum([datum]))
         multi_pose = datum.poseKeypoints  # (num_person, num_joint, 3)
+        if multi_pose is None:
+            return None, None, None
         output_img = datum.cvOutputData.copy()
         if only_prior_person:
             pose = self.__get_prior_person(multi_pose)
@@ -119,6 +80,9 @@ class OpenPoseEstimator(object):
     def __get_prior_person(self, multi_pose):
         max_conf = -1
         prior = -1
+        if multi_pose is None:
+            print('No person detected!')
+            return None
         num_people, _, _ = multi_pose.shape
         for person in range(num_people):
             conf = multi_pose[person, :, 2].sum()
@@ -146,11 +110,11 @@ if __name__ == '__main__':
     openpose = OpenPoseEstimator(op_path='D:\\Desktop\\openpose',
                                  model_folder='..\\..\\weights',
                                  DEBUG=True)
-    sample_video = "../../test.png"
+    sample_video = "../../dataset/train/normal/Hugo_Normal_posture_000000.png"
     img = cv2.imread(sample_video)
     short_edge = 512
-    _, _, out= openpose.estimate_image(img)
-    cv2.imshow('test', out)
-    cv2.waitKey(0)
+    _, _, out = openpose.estimate_image(img)
+    cv2.imwrite('../../test_out.png', out)
+    # cv2.waitKey(0)
     # video_array = gen_video_array(sample_video, short_edge)
     # openpose.estimate_video(video_array)

@@ -8,58 +8,11 @@ from scipy.signal import savgol_filter
 from src.pose.openposeAPI import openpose_header
 
 vector_set = [
-    ['left_elbow', 'left_wrist', 'left_shoulder', 'left_elbow'],
-    ['right_shoulder', 'right_elbow', 'right_elbow', 'right_wrist'],
     ['left_shoulder', 'left_hip', 'left_shoulder', 'left_elbow'],
     ['right_shoulder', 'right_elbow', 'right_shoulder', 'right_hip'],
-    ['left_hip', 'right_hip', 'left_hip', 'left_knee'],
-    ['right_hip', 'right_knee', 'right_hip', 'left_hip'],
-    ['left_knee', 'left_ankle', 'left_hip', 'left_knee'],
-    ['right_hip', 'right_knee', 'right_knee', 'right_ankle'],
     ['neck', 'nose', 'left_shoulder', 'right_shoulder']
 ]
 feature_len = len(vector_set)
-
-
-
-def get_video_angle_vec(pose_array_list, action_class=None):
-    """
-    :param pose_array_list:
-    :param action_class:
-    :return: list of static frames
-    """
-    # Open the input movie file
-    # angle method
-    mask = np.ones(feature_len)
-    if action_class is not None:
-        f = open(os.path.split(os.path.realpath(__file__))[0] + '/../../config/action_class_mask.json', 'r')
-        content = f.read()
-        action_cfg = json.loads(content)
-        mask = np.array(action_cfg[action_class])
-        f.close()
-    angle_vecs = []
-    error_vecs = []
-    frame_list = []
-    for pose in pose_array_list:
-
-        angle_vec = get_angle_vec(pose, openpose_header)
-
-        # # get rid of abnormal value
-        # if len(angle_vecs) != 0:
-        #     errs = angle_vec - angle_vecs[-1]
-        #     if len(error_vecs) != 0:
-        #         for i, err in enumerate(errs):
-        #             if abs(err) > abs(error_vecs[-1][i]) + np.pi/2:
-        #                 angle_vec[i] = angle_vecs[-1][i] + error_vecs[-1][i]
-        #                 errs[i] = error_vecs[-1][i]
-        #     error_vecs.append(errs)
-
-        # print(angle_vec)
-        angle_vecs.append(angle_vec)
-
-    angle_vecs = np.float32(angle_vecs)
-    # angle_vecs = column_smooth(angle_vecs)
-    return angle_vecs, mask
 
 
 def get_angle_vec(pose_array, header):
@@ -86,6 +39,8 @@ def cal_angle(b_pt1, e_pt1, b_pt2, e_pt2):
     :param e_pt2: (ndarray) end point 2 [x, y]
     :return: (float -pi~pi) angle from vector1 to vector2 (anticlockwise rad)
     """
+    if (np.array([b_pt1, e_pt1, b_pt2, e_pt2]) == np.array([0.0, 0.0])).any():
+        return 2*np.pi
     vec1 = e_pt1 - b_pt1
     vec2 = e_pt2 - b_pt2
     dot_prod = (vec1 * vec2).sum()
@@ -104,10 +59,6 @@ def cal_angle(b_pt1, e_pt1, b_pt2, e_pt2):
         return theta
     else:
         return -theta
-        # if theta > np.pi / 2:
-        #     return 2*np.pi - theta
-        # else:
-        #     return -theta
 
 
 def column_smooth(arrays):
