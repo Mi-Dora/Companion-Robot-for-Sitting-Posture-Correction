@@ -10,7 +10,9 @@ from src.pose.openposeAPI import openpose_header
 vector_set = [
     ['left_shoulder', 'left_hip', 'left_shoulder', 'left_elbow'],
     ['right_shoulder', 'right_elbow', 'right_shoulder', 'right_hip'],
-    ['neck', 'nose', 'left_shoulder', 'right_shoulder']
+    ['neck', 'nose', 'left_shoulder', 'right_shoulder'],
+    ['left_shoulder', 'neck', 'left_shoulder', 'left_hip'],
+    ['right_shoulder', 'right_hip', 'right_shoulder', 'neck']
 ]
 feature_len = len(vector_set)
 

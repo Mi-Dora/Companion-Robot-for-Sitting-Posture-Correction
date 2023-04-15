@@ -15,9 +15,9 @@ load_pose = True
 
 if not load_pose:
     openpose = OpenPoseEstimator(op_path='D:\\Desktop\\openpose',
-                                    model_folder='..\\weights',
-                                     DEBUG=True)
-classifier = KNNClassifier(k=3)
+                                 model_folder='..\\weights',
+                                 DEBUG=True)
+classifier = KNNClassifier(k=2)
 
 dataset_pth = "../dataset"
 
@@ -98,12 +98,17 @@ def eval(load=False):
         np.save('../dataset/test_labels', labels)
     angle_vecs = np.array(angle_vecs)
     pred_labels = classifier.classify(angle_vecs)
-    correct = np.array(pred_labels) == np.array(labels).reshape(-1, 1)
+    pred_labels = np.array(pred_labels)
+    labels = np.array(labels).reshape(-1, 1)
+    gt_normal = labels == 0
+    pred_bad = pred_labels == 1
+    False_Alarm = gt_normal[pred_bad]
+    correct = pred_labels == labels
     acc = np.sum(correct) / correct.size
+    fp_rate = False_Alarm.sum()/labels.size
     print("The classification Accuracy is {}".format(acc))
+    print("The False Alarm rate is {}".format(fp_rate))
 
 
 train(load=load_pose)
 eval(load=load_pose)
-
-
