@@ -1,6 +1,9 @@
 import cv2
 import os
 
+# Press 'a' for normal posture
+# Press 's' for bad posture
+
 path = '../dataset/side/control'
 try:
     with open("{}.log".format(path), 'r') as f:
